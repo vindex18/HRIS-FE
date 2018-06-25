@@ -9,7 +9,9 @@ import { sendLog, getTimeCardConfig }from '../../config/Api';
 import { decodeToken  } from '../../config/Token';
 import Notif from './Notif';
 import Tooltip from '@material-ui/core/Tooltip';
-import TimeLogModal from './TimeLogModal';
+import TimeLog from './TimeLog';
+import CircularLoader from '../utils/CircularProgressInd';
+import { getTimeLog } from '../../config/Api';
 
 import { 
     Card, Button, CardContent,
@@ -32,11 +34,11 @@ class TimeCard extends Component {
         nextpunch:"",
         nextpunchdesc: "",
         confirmDiaLog: "",
-        tccont:"",
+        tccont:<CircularLoader/>,
         msg: "",
         showMsg: "",
         statshowMsg: true,
-        showTimeLog: false
+        showTimeLog: ''
     }
 
     handleChange = (e) => {
@@ -59,17 +61,13 @@ class TimeCard extends Component {
         this.setState({ isLoggedIn: false });
     }
 
-    clearConfirmDialog = (e) => {
+    clearConfirmDialog = () => {
         //this.setState({msg:<Notif msg={this.state.msg}/>})
         this.setState({confirmDiaLog:''});
     }
-
-    showTimeAttendance = (e) => {
-        e.preventDefault();
-        alert("WOW");
-
-        //this.setState({});
-
+    
+    closeTimeLog = () => {
+        this.setState({showTimeLog:''});
     }
 
     showConfirmTimeLog = (e, tag, desc) => {    
@@ -176,12 +174,36 @@ class TimeCard extends Component {
 
     showTimeLog = (e) => {
         e.preventDefault();
-        
+        const logstat = getTimeLog();
+        logstat.then(response => {
+        console.log("FINISHED!"); 
+        console.log(response);
+        console.log("END OF FINISHED!");
+        const data = response.data;
+        console.log("THIS IS THE DATA!");
+        console.log(data);
+        console.log("THIS IS THE DATA!");
+
+        if(this.state.showTimeLog){
+            console.log("CLEARING");
+            this.setState({showTimeLog:''});
+        }else{
+            console.log("CALLING");
+            this.setState({showTimeLog:''});
+            this.setState({
+                showTimeLog:<TimeLog clear={() => this.closeTimeLog()} data={data}/>
+            });
+        } 
+        console.log(this.state.showTimeLog);
+        });
     }
 
     componentWillMount(){
-        console.log("WILL MOUNT TIME CARD: "+this.state);
-        if(localStorage && localStorage.getItem('token')){
+        console.log("------------- YOU ARE NOW IN TIME CARD --------------");
+        console.log("WILL MOUNT TIME CARD: ");
+        console.log(this.state);
+        console.log("WILL MOUNT TIME CARD: ");
+        if(localStorage && localStorage.getItem('token')!==undefined){
             console.log("I HAVE TOKEN IN TIME CARD!");
             this.setState({auth: decodeToken(this.state)});   
             const timedata = getTimeCardConfig(this.state);
@@ -383,7 +405,7 @@ class TimeCard extends Component {
 
         return (
             <div style={styles.pageHeader}>
-               {this.state.msg}
+               {this.state.msg} {this.state.showTimeLog}
                 <div>
                     {this.state.confirmDiaLog}
                     <Card style={styles.card}>       

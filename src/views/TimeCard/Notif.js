@@ -1,5 +1,5 @@
 import React from 'react';
-//import Button from '@material-ui/core/Button';
+import Button from '@material-ui/core/Button';
 import Snackbar from '@material-ui/core/Snackbar';
 
 class Notif extends React.Component {
@@ -21,9 +21,9 @@ class Notif extends React.Component {
     const { vertical, horizontal, open } = this.state;
     return (
       <div>
-        {/* <Button onClick={this.handleClick({ vertical: 'top', horizontal: 'center' })}>
+        <Button onClick={this.handleClick({ vertical: 'top', horizontal: 'center' })}>
           Top-Center
-        </Button> */}
+        </Button>
         <Snackbar
           anchorOrigin={{ vertical, horizontal }}
           open={open}

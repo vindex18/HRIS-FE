@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {Component}from 'react';
 import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
@@ -11,7 +11,7 @@ const Transition = (props) => {
   return <Slide direction="up" {...props} />;
 }
 
-class ConfirmDialog extends React.Component {
+class ConfirmDialog extends Component {
   state = {
     open: true,
     title: "",
@@ -27,6 +27,8 @@ class ConfirmDialog extends React.Component {
      this.props.send(e);
      this.setState({open:false});
   }
+
+  component
 
   render(props) {
     return (

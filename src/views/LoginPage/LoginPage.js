@@ -1,13 +1,11 @@
 import React, { Component } from 'react';
-import axios from 'axios';
 import { NavLink, Redirect } from 'react-router-dom';
-
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
 import indigo from '@material-ui/core/colors/indigo';
 import { verifyToken } from '../../config/Token';
 import image from "../../assets/img/bgLogin.jpg";
 import logo from "../../assets/img/InventoLogo.svg";
-import { api_url } from "../../config/Api";
+import { validateCredentials } from "../../config/Api";
 import Notif from '../TimeCard/Notif';
 
 import { 
@@ -45,57 +43,101 @@ class LoginPage extends Component {
     handleClickShowPassword = () => {
         this.setState({ showPassword: !this.state.showPassword }); 
       };
-    
+
     handleLogIn = (e) => {   
         e.preventDefault();       
+     
+        localStorage.clear();
         this.setState({ isLoggedIn: false, msg: "   " });    
         let bodyFormData = new FormData();
         // bodyFormData.set('email', 'ivan@invento.io');
         bodyFormData.set('email', this.state.email + '@invento.io');
         // bodyFormData.set('email', this.state.email);
         bodyFormData.set('password', 'qwerty');
-        console.log("Submitting: ");
-        axios({
-            method: 'POST',
-            url: api_url() +'/authorization/validatecredentials',
-            data: bodyFormData, // / data,      //
-            // config: { headers: {'Content-Type': 'multipart/form-data' }}
-            // config: { headers: {'Content-Type': 'application/json' }}
-            config: { 'Content-Type': 'application/json',}
-        }).then((response) => {
-            //handle success
-            if(response.data.status){ // if valid
-                console.log(response);
-                console.log(response.data.tk);
-                console.log ("OKKKKK");
-                localStorage.setItem('token', response.data.tk );
-                localStorage.setItem('firstname', response.data.userdata.firstname);
-                localStorage.setItem('middlename', response.data.userdata.middlename);
-                localStorage.setItem('lastname', response.data.userdata.lastname);
-                localStorage.setItem('email', response.data.userdata.email);
-                localStorage.setItem('position', response.data.userdata.position);
-
-                this.setState({isLoggedIn:true});
-            }else if(!response.data.status){ // if invalid
-                console.log(response);
+        const logstat = validateCredentials(bodyFormData);
+        logstat.then(response => {
+            console.log(response.data);
+            if(response.data.status===true){ // if valid
+            console.log(response.data.status);
+            //console.log(response.data.tk);
+            console.log ("OKKKKK");
+            localStorage.setItem('token', response.data.tk );
+            localStorage.setItem('firstname', response.data.userdata.firstname);
+            localStorage.setItem('middlename', response.data.userdata.middlename);
+            localStorage.setItem('lastname', response.data.userdata.lastname);
+            localStorage.setItem('email', response.data.userdata.email);
+            localStorage.setItem('position', response.data.userdata.position);
+            this.setState({isLoggedIn:true});
+            }else if(!response.data.status!==true){ // if invalid
+                console.log(response.status);
                 console.log ("NOT OKKKKK");
-                this.setState({ isLoggedIn: false, msg: <Notif msg={response.data.msg}/> });           
+                this.setState({ isLoggedIn: false, msg: <Notif msg={response.data.msg}/> });
+                return false;
+                //this.setState({ isLoggedIn: false, msg: <Notif msg={response.data.msg}/> });           
             }
         }).catch(function (response) {
             //handle error
-            console.log(response);
+            //console.log(response);
         });
     }
+    
+    // handleLogIn = (e) => {   
+    //     e.preventDefault();       
+    //     this.setState({ isLoggedIn: false, msg: "   " });    
+    //     let bodyFormData = new FormData();
+    //     // bodyFormData.set('email', 'ivan@invento.io');
+    //     bodyFormData.set('email', this.state.email + '@invento.io');
+    //     // bodyFormData.set('email', this.state.email);
+    //     bodyFormData.set('password', 'qwerty');
+    //     console.log("Submitting: ");
+    //     axios({
+    //         method: 'POST',
+    //         url: api_url() +'/authorization/validatecredentials',
+    //         data: bodyFormData, // / data,      //
+    //         // config: { headers: {'Content-Type': 'multipart/form-data' }}
+    //         // config: { headers: {'Content-Type': 'application/json' }}
+    //         config: { 'Content-Type': 'application/json',}
+    //     }).then((response) => {
+    //         //handle success
+    //         if(response.data.status){ // if valid
+    //             console.log(response);
+    //             console.log(response.data.tk);
+    //             console.log ("OKKKKK");
+    //             localStorage.setItem('token', response.data.tk );
+    //             localStorage.setItem('firstname', response.data.userdata.firstname);
+    //             localStorage.setItem('middlename', response.data.userdata.middlename);
+    //             localStorage.setItem('lastname', response.data.userdata.lastname);
+    //             localStorage.setItem('email', response.data.userdata.email);
+    //             localStorage.setItem('position', response.data.userdata.position);
 
-    componentWillMount(){
-        let hasToken = verifyToken();
-        console.log(this.state);
-        console.log("HAS (LOGIN PAGE) TOKEN " + hasToken);
-        console.log(this.state);
-        (hasToken) ? this.setState({isLoggedIn:true}) :this.setState({isLoggedIn:false});
-        console.log(this.state);
+    //             this.setState({isLoggedIn:true});
+    //         }else if(!response.data.status){ // if invalid
+    //             console.log(response);
+    //             console.log ("NOT OKKKKK");
+    //             this.setState({ isLoggedIn: false, msg: <Notif msg={response.data.msg}/> });           
+    //         }
+    //     }).catch(function (response) {
+    //         //handle error
+    //         console.log(response);
+    //     });
+    // }
+
+    componentDidMount(){
+        console.log("------------- YOU ARE NOW IN LOGIN PAGE DID MOUNT --------------");
+        if(localStorage && localStorage.getItem('token') && localStorage.getItem('token') !== undefined){ 
+            const hasToken = verifyToken();
+            console.log(hasToken);
+            hasToken.then(response => {
+                console.log(response);
+                (response.status) ? this.setState({isLoggedIn:true}) : this.setState({isLoggedIn:false});
+            }).catch(function (response) {
+                //handle error
+                console.log(response);
+            });
+            //console.log(this.state);
+        }
+        // console.log(this.state);
     }
-
     render(){
 
         const theme = createMuiTheme({
@@ -261,7 +303,7 @@ class LoginPage extends Component {
                                 </NavLink>
                                                              
                             </form>
-                            <Button style={{position: "relative", top: "50px", left: "32%", height: "50px", width: "185px", color: theme.palette.getContrastText("#A0446A"), backgroundColor: "#A0446A", '&:hover': { backgroundColor: "#A0446A", },}} variant="contained" color="secondary"  onClick={this.handleLogIn}>
+                            <Button style={{position: "relative", top: "50px", left: "32%", height: "50px", width: "185px", color: theme.palette.getContrastText("#A0446A"), backgroundColor: "#A0446A", '&:hover': { backgroundColor: "#A0446A", },}} variant="contained" color="secondary"  onClick={(e) => this.handleLogIn(e)}>
                                 Login
                             </Button>                                                     
                         </CardContent>
