@@ -8,6 +8,8 @@ import ConfirmDialog  from './ConfirmDialog';
 import { sendLog, getTimeCardConfig }from '../../config/Api';
 import { decodeToken  } from '../../config/Token';
 import Notif from './Notif';
+import Tooltip from '@material-ui/core/Tooltip';
+import TimeLogModal from './TimeLogModal';
 
 import { 
     Card, Button, CardContent,
@@ -32,7 +34,9 @@ class TimeCard extends Component {
         confirmDiaLog: "",
         tccont:"",
         msg: "",
-        showMsg: ""
+        showMsg: "",
+        statshowMsg: true,
+        showTimeLog: false
     }
 
     handleChange = (e) => {
@@ -58,6 +62,14 @@ class TimeCard extends Component {
     clearConfirmDialog = (e) => {
         //this.setState({msg:<Notif msg={this.state.msg}/>})
         this.setState({confirmDiaLog:''});
+    }
+
+    showTimeAttendance = (e) => {
+        e.preventDefault();
+        alert("WOW");
+
+        //this.setState({});
+
     }
 
     showConfirmTimeLog = (e, tag, desc) => {    
@@ -87,7 +99,7 @@ class TimeCard extends Component {
                 },
             });
 
-            if(type_id==1){ //last TI
+            if(type_id===1){ //last TI
                 this.setState({
                     tccont:<li style={{marginBottom: "5%", marginLeft: "-32%",}}>
                     <Button style={{position: "relative", top: "50px", left: "15%", height: "50px", width: "185px", color: theme.palette.getContrastText("#A0446A"), backgroundColor: "#A0446A", '&:hover': { backgroundColor: "#A0446A", },}} variant="contained" color="secondary" onClick={(e) => this.showConfirmTimeLog(e, 2, this.state.nextpunchdesc)}>
@@ -96,7 +108,7 @@ class TimeCard extends Component {
                     {"Time-out"}</Button>
                     </li>
                 })
-            }else if(type_id==2){ //last BO
+            }else if(type_id===2){ //last BO
                 this.setState({
                     tccont:<li style={{marginBottom: "5%", marginLeft: "-32%",}}>
                     <Button style={{position: "relative", top: "50px", left: "15%", height: "50px", width: "185px", color: theme.palette.getContrastText("#A0446A"), backgroundColor: "#A0446A", '&:hover': { backgroundColor: "#A0446A", },}} variant="contained" color="secondary" onClick={(e) => this.showConfirmTimeLog(e, 3, "Break-In")}>
@@ -105,7 +117,7 @@ class TimeCard extends Component {
                     {"Time-out"}</Button>
                     </li>
                 })
-            }else if(type_id==3){
+            }else if(type_id===3){
                 this.setState({
                     tccont:<li style={{marginBottom: "5%", marginLeft: "-32%",}}>
                     <Button style={{position: "relative", top: "50px", left: "15%", height: "50px", width: "185px", color: theme.palette.getContrastText("#A0446A"), backgroundColor: "#A0446A", '&:hover': { backgroundColor: "#A0446A", },}} variant="contained" color="secondary" onClick={(e) => this.showConfirmTimeLog(e, 2, "Break-Out")}>
@@ -114,7 +126,7 @@ class TimeCard extends Component {
                     {"Time-out"}</Button>
                     </li>
                 })
-            }else if(type_id==4){
+            }else if(type_id===4){
                 this.setState({
                     tccont: <li style={{marginBottom: "5%"}}>
                     <Button style={{position: "relative", top: "50px", left: "15%", height: "50px", width: "185px", color: theme.palette.getContrastText("#A0446A"), backgroundColor: "#A0446A", '&:hover': { backgroundColor: "#A0446A", },}} variant="contained" color="secondary" onClick={(e) => this.showConfirmTimeLog(e, 1, "Time-In")}>
@@ -153,12 +165,18 @@ class TimeCard extends Component {
                 nextpunch:response.log.log.next_punch,
                 nextpunchdesc: response.log.log.nextpunch_desc,   
                 msg: <Notif msg={response.msg} />,
-                showMsg: response.msg
+                showMsg: response.msg,
+                //statshowMsg: response.
             });
             this.handleUpdateTimeCardContent(response.log.log.last_punch);
             console.log("SHOWINNNNNNNNNNGGGGGGGGGGGGGGGGG!");
         });
         console.log("End of Log...");
+    }
+
+    showTimeLog = (e) => {
+        e.preventDefault();
+        
     }
 
     componentWillMount(){
@@ -191,7 +209,7 @@ class TimeCard extends Component {
                     },
                 });
 
-                if(response.last_punch==1){ //last TI
+                if(response.last_punch===1){ //last TI
                     this.setState({
                         tccont:<li style={{marginBottom: "5%", marginLeft: "-32%",}}>
                         <Button style={{position: "relative", top: "50px", left: "15%", height: "50px", width: "185px", color: theme.palette.getContrastText("#A0446A"), backgroundColor: "#A0446A", '&:hover': { backgroundColor: "#A0446A", },}} variant="contained" color="secondary" onClick={(e) => this.showConfirmTimeLog(e, 2, this.state.nextpunchdesc)}>
@@ -200,7 +218,7 @@ class TimeCard extends Component {
                         {"Time-out"}</Button>
                         </li>
                     })
-                }else if(response.last_punch==2){ //last BO
+                }else if(response.last_punch===2){ //last BO
                     this.setState({
                         tccont:<li style={{marginBottom: "5%", marginLeft: "-32%",}}>
                         <Button style={{position: "relative", top: "50px", left: "15%", height: "50px", width: "185px", color: theme.palette.getContrastText("#A0446A"), backgroundColor: "#A0446A", '&:hover': { backgroundColor: "#A0446A", },}} variant="contained" color="secondary" onClick={(e) => this.showConfirmTimeLog(e, 3, "Break-In")}>
@@ -209,7 +227,7 @@ class TimeCard extends Component {
                         {"Time-out"}</Button>
                         </li>
                     })
-                }else if(response.last_punch==3){
+                }else if(response.last_punch===3){
                     this.setState({
                         tccont:<li style={{marginBottom: "5%", marginLeft: "-32%",}}>
                         <Button style={{position: "relative", top: "50px", left: "15%", height: "50px", width: "185px", color: theme.palette.getContrastText("#A0446A"), backgroundColor: "#A0446A", '&:hover': { backgroundColor: "#A0446A", },}} variant="contained" color="secondary" onClick={(e) => this.showConfirmTimeLog(e, 2, "Break-Out")}>
@@ -218,7 +236,7 @@ class TimeCard extends Component {
                         {"Time-out"}</Button>
                         </li>
                     })
-                }else if(response.last_punch==4){
+                }else if(response.last_punch===4){
                     this.setState({
                         tccont: <li style={{marginBottom: "5%"}}>
                         <Button style={{position: "relative", top: "50px", left: "15%", height: "50px", width: "185px", color: theme.palette.getContrastText("#A0446A"), backgroundColor: "#A0446A", '&:hover': { backgroundColor: "#A0446A", },}} variant="contained" color="secondary" onClick={(e) => this.showConfirmTimeLog(e, 1, "Time-In")}>
@@ -236,7 +254,7 @@ class TimeCard extends Component {
                 //Temp
             });
             
-            console.log(this.state);         
+            //console.log(this.state);         
         }
         else{
             console.log("I DONT HAVE TOKEN IN TIME CARD!");
@@ -245,11 +263,6 @@ class TimeCard extends Component {
     }
 
     render(){
-        const theme = createMuiTheme({
-            palette: {
-              primary: indigo,
-            },
-        });
         
         const styles = {
             root: {
@@ -378,9 +391,11 @@ class TimeCard extends Component {
                             <Avatar alt="Logo" src={logo} style={styles.avatar} />
                         </div>
                         <div style={styles.divider}>
-                        <Typography variant="display1" style={{fontSize:"145%", paddingBottom:"5px"}} >{this.state.firstname} {this.state.middlename} {this.state.lastname}</Typography>
+                        <Typography variant="display1" style={{fontSize:"145%", paddingBottom:"5px"}} >{this.state.firstname} {/*this.state.middlename*/} {this.state.lastname}</Typography>
                         <Typography variant="body1" >{this.state.postitle}</Typography>
-                        <Typography variant="body2">  {this.state.showMsg}</Typography>
+                        <Tooltip id="tooltip-top" title="Click to show your Time Log" placement="top">
+                        <Typography variant="body2" onClick={(e) => this.showTimeLog(e)}>
+                        {this.state.showMsg}</Typography></Tooltip>
                         </div>
                         <CardContent>
                             <ul style={{marginLeft: "13%", listStyleType: "none"}}>
