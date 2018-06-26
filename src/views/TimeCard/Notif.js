@@ -21,9 +21,9 @@ class Notif extends React.Component {
     const { vertical, horizontal, open } = this.state;
     return (
       <div>
-        <Button onClick={this.handleClick({ vertical: 'top', horizontal: 'center' })}>
+        {/* <Button onClick={this.handleClick({ vertical: 'top', horizontal: 'center' })}>
           Top-Center
-        </Button>
+        </Button> */}
         <Snackbar
           anchorOrigin={{ vertical, horizontal }}
           open={open}
@@ -31,7 +31,8 @@ class Notif extends React.Component {
           ContentProps={{
             'aria-describedby': 'message-id',
           }}
-          message={<span id="message-id">{this.props.msg}</span>}
+          style={{textAlign:"center"}}
+          message={<span id="message-id" style={{margin:"auto", marginLeft:"40px"}}>{this.props.msg}</span>}
         />
       </div>
     );

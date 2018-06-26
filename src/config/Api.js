@@ -2,7 +2,7 @@ import axios from 'axios';
 
 
 export const api_url = () => {
-    return 'http://192.168.1.34/hris-api/public';
+    return 'http://localhost/hris-api/public';
 }
 
 // let uploadProgress = {

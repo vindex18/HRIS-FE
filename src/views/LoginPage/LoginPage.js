@@ -50,16 +50,19 @@ class LoginPage extends Component {
         localStorage.clear();
         this.setState({ isLoggedIn: false, msg: "   " });    
         let bodyFormData = new FormData();
-        // bodyFormData.set('email', 'ivan@invento.io');
-        bodyFormData.set('email', this.state.email + '@invento.io');
-        // bodyFormData.set('email', this.state.email);
-        bodyFormData.set('password', 'qwerty');
+        //bodyFormData.set('email', 'ivan@invento.io');
+        //bodyFormData.set('email', this.state.email + '@invento.io');
+        //bodyFormData.set('email', this.state.email);
+        //bodyFormData.set('password', 'qwerty');
+        bodyFormData.set('email', this.state.email);
+        bodyFormData.set('password', this.state.password);
+
         const logstat = validateCredentials(bodyFormData);
         logstat.then(response => {
             console.log(response.data);
+            console.log(response.data.status);
             if(response.data.status===true){ // if valid
             console.log(response.data.status);
-            //console.log(response.data.tk);
             console.log ("OKKKKK");
             localStorage.setItem('token', response.data.tk );
             localStorage.setItem('firstname', response.data.userdata.firstname);
@@ -68,59 +71,25 @@ class LoginPage extends Component {
             localStorage.setItem('email', response.data.userdata.email);
             localStorage.setItem('position', response.data.userdata.position);
             this.setState({isLoggedIn:true});
-            }else if(!response.data.status!==true){ // if invalid
+            }else if(response.data.status!==true&&response.data.status==='val'){
+                console.log('validation error!');
+                let x = response.data.msg;
+                let err = "";
+                for(let c=0;c<x.length;c++){
+                err += "\n"+x[c];
+                }
+                //this.setState({ isLoggedIn: false, msg: <Notif msg={err}/> });
+            }else if(response.data.status!==true){ // if invalid
                 console.log(response.status);
                 console.log ("NOT OKKKKK");
                 this.setState({ isLoggedIn: false, msg: <Notif msg={response.data.msg}/> });
                 return false;
-                //this.setState({ isLoggedIn: false, msg: <Notif msg={response.data.msg}/> });           
             }
         }).catch(function (response) {
             //handle error
             //console.log(response);
         });
     }
-    
-    // handleLogIn = (e) => {   
-    //     e.preventDefault();       
-    //     this.setState({ isLoggedIn: false, msg: "   " });    
-    //     let bodyFormData = new FormData();
-    //     // bodyFormData.set('email', 'ivan@invento.io');
-    //     bodyFormData.set('email', this.state.email + '@invento.io');
-    //     // bodyFormData.set('email', this.state.email);
-    //     bodyFormData.set('password', 'qwerty');
-    //     console.log("Submitting: ");
-    //     axios({
-    //         method: 'POST',
-    //         url: api_url() +'/authorization/validatecredentials',
-    //         data: bodyFormData, // / data,      //
-    //         // config: { headers: {'Content-Type': 'multipart/form-data' }}
-    //         // config: { headers: {'Content-Type': 'application/json' }}
-    //         config: { 'Content-Type': 'application/json',}
-    //     }).then((response) => {
-    //         //handle success
-    //         if(response.data.status){ // if valid
-    //             console.log(response);
-    //             console.log(response.data.tk);
-    //             console.log ("OKKKKK");
-    //             localStorage.setItem('token', response.data.tk );
-    //             localStorage.setItem('firstname', response.data.userdata.firstname);
-    //             localStorage.setItem('middlename', response.data.userdata.middlename);
-    //             localStorage.setItem('lastname', response.data.userdata.lastname);
-    //             localStorage.setItem('email', response.data.userdata.email);
-    //             localStorage.setItem('position', response.data.userdata.position);
-
-    //             this.setState({isLoggedIn:true});
-    //         }else if(!response.data.status){ // if invalid
-    //             console.log(response);
-    //             console.log ("NOT OKKKKK");
-    //             this.setState({ isLoggedIn: false, msg: <Notif msg={response.data.msg}/> });           
-    //         }
-    //     }).catch(function (response) {
-    //         //handle error
-    //         console.log(response);
-    //     });
-    // }
 
     componentDidMount(){
         console.log("------------- YOU ARE NOW IN LOGIN PAGE DID MOUNT --------------");
@@ -272,7 +241,6 @@ class LoginPage extends Component {
                             data-holder-rendered="true"
                         />
                         <p style={styles.divider}>Welcome back! Please login to your account.</p>
-                        
                         <CardContent>
                             <form style={styles.container} noValidate autoComplete="off">
                                 <MuiThemeProvider theme={theme}>
@@ -305,7 +273,8 @@ class LoginPage extends Component {
                             </form>
                             <Button style={{position: "relative", top: "50px", left: "32%", height: "50px", width: "185px", color: theme.palette.getContrastText("#A0446A"), backgroundColor: "#A0446A", '&:hover': { backgroundColor: "#A0446A", },}} variant="contained" color="secondary"  onClick={(e) => this.handleLogIn(e)}>
                                 Login
-                            </Button>                                                     
+                            </Button>   
+                                                                              
                         </CardContent>
                         
                     </Card>

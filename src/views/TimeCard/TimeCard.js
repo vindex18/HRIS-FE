@@ -27,7 +27,7 @@ class TimeCard extends Component {
         postitle: "",
         sid: "",
         isLoggedIn: true,
-        auth: false,
+        // auth: false,
         lastpunch: "",
         lastpunchdesc: "",
         lastpunchdt: "",
@@ -175,26 +175,31 @@ class TimeCard extends Component {
     showTimeLog = (e) => {
         e.preventDefault();
         const logstat = getTimeLog();
-        logstat.then(response => {
-        console.log("FINISHED!"); 
-        console.log(response);
-        console.log("END OF FINISHED!");
-        const data = response.data;
-        console.log("THIS IS THE DATA!");
-        console.log(data);
-        console.log("THIS IS THE DATA!");
+            logstat.then(response => {
+            console.log("FINISHED!"); 
+            console.log(response);
+            console.log("END OF FINISHED!");
+            
+            console.log("THIS IS THE DATA!");
+            console.log(response.data);
+            console.log("THIS IS THE DATA!");
 
-        if(this.state.showTimeLog){
-            console.log("CLEARING");
-            this.setState({showTimeLog:''});
-        }else{
-            console.log("CALLING");
-            this.setState({showTimeLog:''});
-            this.setState({
-                showTimeLog:<TimeLog clear={() => this.closeTimeLog()} data={data}/>
-            });
-        } 
-        console.log(this.state.showTimeLog);
+            if(this.state.showTimeLog){
+                console.log("CLEARING");
+                this.setState({showTimeLog:''});
+            }else{
+                console.log("CALLING");
+                this.setState({showTimeLog:''});
+                this.setState({
+                    showTimeLog:<TimeLog 
+                    clear={() => this.closeTimeLog()} 
+                    data={response.data} 
+                    name={this.state.firstname+" "+this.state.lastname}
+                    position={this.state.postitle}
+                    />
+                });
+            } 
+            console.log(this.state.showTimeLog);
         });
     }
 
@@ -202,10 +207,11 @@ class TimeCard extends Component {
         console.log("------------- YOU ARE NOW IN TIME CARD --------------");
         console.log("WILL MOUNT TIME CARD: ");
         console.log(this.state);
+        this.setState({isLoggedIn:false});
         console.log("WILL MOUNT TIME CARD: ");
         if(localStorage && localStorage.getItem('token')!==undefined){
             console.log("I HAVE TOKEN IN TIME CARD!");
-            this.setState({auth: decodeToken(this.state)});   
+            this.setState({isLoggedIn: decodeToken(this.state)});   
             const timedata = getTimeCardConfig(this.state);
   
             timedata.then(response => {
@@ -399,9 +405,9 @@ class TimeCard extends Component {
             return <Redirect to={"/"} />;
         };
 
-        if (!this.state.auth) {
-            return <Redirect to={"/"} />;
-        };
+        // if (!this.state.auth) {
+        //     return <Redirect to={"/"} />;
+        // };
 
         return (
             <div style={styles.pageHeader}>
@@ -415,9 +421,9 @@ class TimeCard extends Component {
                         <div style={styles.divider}>
                         <Typography variant="display1" style={{fontSize:"145%", paddingBottom:"5px"}} >{this.state.firstname} {/*this.state.middlename*/} {this.state.lastname}</Typography>
                         <Typography variant="body1" >{this.state.postitle}</Typography>
-                        <Tooltip id="tooltip-top" title="Click to show your Time Log" placement="top">
+                        <a><Tooltip id="tooltip-top" title="Click to show your Time Log" placement="top">
                         <Typography variant="body2" onClick={(e) => this.showTimeLog(e)}>
-                        {this.state.showMsg}</Typography></Tooltip>
+                        {this.state.showMsg}</Typography></Tooltip></a>
                         </div>
                         <CardContent>
                             <ul style={{marginLeft: "13%", listStyleType: "none"}}>
@@ -433,7 +439,7 @@ class TimeCard extends Component {
                                 </li> }
                             </li> */}
                                 <li>
-                                <Link to="/" style={{ textDecoration: 'none' }}><Button style={styles.buttonInfo} variant="outlined"> Dashboard </Button></Link> </li>
+                                <Link to="/admin" style={{ textDecoration: 'none' }}><Button style={styles.buttonInfo} variant="outlined"> Dashboard </Button></Link> </li>
                                 <li>
                                 <NavLink to="/" style={{position: "relative", top: "60px", left: "31%", textTransform: "uppercase", textDecoration: 'none', }} onClick={this.handleLogout}>
                                     <Typography variant="caption">Logout</Typography>

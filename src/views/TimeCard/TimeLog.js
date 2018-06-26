@@ -5,7 +5,7 @@ import Typography from '@material-ui/core/Typography';
 import Modal from '@material-ui/core/Modal';
 import ClickAwayListener from '@material-ui/core/ClickAwayListener';
 import CircularLoader from '../utils/CircularProgressInd';
-//import Button from '@material-ui/core/Button';
+import Button from '@material-ui/core/Button';
 import LogTable from './LogTable';
 
 const getModalStyle = () => {
@@ -15,7 +15,6 @@ const getModalStyle = () => {
   return {
     top: `${top}%`,
     left: `${left}%`,
-    // overflowoverflowY: "scroll",
     transform: `translate(-${top}%, -${left}%)`,
   };
 }
@@ -89,10 +88,11 @@ class TimeLog extends React.Component {
         >
           <div style={getModalStyle()} className={classes.paper}>
             <Typography variant="title" id="modal-title">
-               Your Time Log 
+               {this.props.name + " ("+this.props.position+")" } 
+               <Button style={{left:'1185px', position:'fixed', top:'10px'}} onClick={this.handleClose}>x</Button>
             </Typography>
-            <Typography variant="display1" id="simple-modal-description">
-               Duis mollis, est non commodo luctus, nisi erat porttitor ligula.
+            <Typography variant="headline" id="simple-modal-description">
+               {/* Duis mollis, est non commodo luctus, nisi erat porttitor ligula. */}
               <div>
                 {this.state.logtable}
               </div>
