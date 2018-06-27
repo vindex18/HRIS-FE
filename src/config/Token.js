@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { api_url } from "./Api";
 
-export const decodeToken = (props) => {
+export const decodeToken = (props) => { //If Has Token
     if(localStorage && localStorage.getItem('token') && localStorage !== undefined){
         console.log("HAS TOKEN!");            
         props.firstname = localStorage.getItem('firstname');

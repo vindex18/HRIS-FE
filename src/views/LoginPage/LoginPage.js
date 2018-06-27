@@ -23,7 +23,8 @@ class LoginPage extends Component {
         password: "",
         isLoggedIn: false,
         showPassword: false,
-        msg:''
+        msg:'',
+        loginButton:false
     }
 
     handleChange = (e) => {
@@ -46,16 +47,14 @@ class LoginPage extends Component {
 
     handleLogIn = (e) => {   
         e.preventDefault();       
-     
         localStorage.clear();
-        this.setState({ isLoggedIn: false, msg: "   " });    
+        this.setState({ isLoggedIn: false, msg: "   ", loginButton:true});    
         let bodyFormData = new FormData();
         //bodyFormData.set('email', 'ivan@invento.io');
-        //bodyFormData.set('email', this.state.email + '@invento.io');
-        //bodyFormData.set('email', this.state.email);
-        //bodyFormData.set('password', 'qwerty');
-        bodyFormData.set('email', this.state.email);
-        bodyFormData.set('password', this.state.password);
+        bodyFormData.set('email', this.state.email + '@invento.io');
+        bodyFormData.set('password', 'qwerty');
+        // bodyFormData.set('email', this.state.email);
+        // bodyFormData.set('password', this.state.password);
 
         const logstat = validateCredentials(bodyFormData);
         logstat.then(response => {
@@ -78,11 +77,11 @@ class LoginPage extends Component {
                 for(let c=0;c<x.length;c++){
                 err += "\n"+x[c];
                 }
-                //this.setState({ isLoggedIn: false, msg: <Notif msg={err}/> });
+                this.setState({ isLoggedIn: false, msg: <Notif msg={err}/>, loginButton:false });
             }else if(response.data.status!==true){ // if invalid
                 console.log(response.status);
                 console.log ("NOT OKKKKK");
-                this.setState({ isLoggedIn: false, msg: <Notif msg={response.data.msg}/> });
+                this.setState({ isLoggedIn: false, msg: <Notif msg={response.data.msg}/>, loginButton:true});
                 return false;
             }
         }).catch(function (response) {
@@ -92,22 +91,25 @@ class LoginPage extends Component {
     }
 
     componentDidMount(){
-        console.log("------------- YOU ARE NOW IN LOGIN PAGE DID MOUNT --------------");
         if(localStorage && localStorage.getItem('token') && localStorage.getItem('token') !== undefined){ 
             const hasToken = verifyToken();
             console.log(hasToken);
             hasToken.then(response => {
                 console.log(response);
-                (response.status) ? this.setState({isLoggedIn:true}) : this.setState({isLoggedIn:false});
-            }).catch(function (response) {
+                (response.status) ? this.setState({isLoggedIn:true}) : this.setState({isLoggedIn:false, loginButton:true});
+            }).catch(function(response) {
                 //handle error
                 console.log(response);
             });
-            //console.log(this.state);
+        }else{
+            this.setState({isLoggedIn:false});
         }
-        // console.log(this.state);
     }
+
     render(){
+        if (this.state.isLoggedIn) {
+            return <Redirect to={"/TimeCard"}/>;
+        }
 
         const theme = createMuiTheme({
             palette: {
@@ -218,10 +220,6 @@ class LoginPage extends Component {
             },
         };
 
-        if (this.state.isLoggedIn) {
-            return <Redirect to={"/TimeCard"}/>;
-        };
-
         return (
             <div style={styles.pageHeader}>
                 <div>
@@ -271,7 +269,7 @@ class LoginPage extends Component {
                                 </NavLink>
                                                              
                             </form>
-                            <Button style={{position: "relative", top: "50px", left: "32%", height: "50px", width: "185px", color: theme.palette.getContrastText("#A0446A"), backgroundColor: "#A0446A", '&:hover': { backgroundColor: "#A0446A", },}} variant="contained" color="secondary"  onClick={(e) => this.handleLogIn(e)}>
+                            <Button disabled={this.state.loginButton} style={{position: "relative", top: "50px", left: "32%", height: "50px", width: "185px", color: theme.palette.getContrastText("#A0446A"), backgroundColor: "#A0446A", '&:hover': { backgroundColor: "#A0446A", },}} variant="contained" color="secondary"  onClick={(e) => this.handleLogIn(e)}>
                                 Login
                             </Button>   
                                                                               

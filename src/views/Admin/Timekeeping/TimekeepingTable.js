@@ -12,6 +12,7 @@ import TableSortLabel from '@material-ui/core/TableSortLabel';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper';
+import Checkbox from '@material-ui/core/Checkbox';
 import IconButton from '@material-ui/core/IconButton';
 import Tooltip from '@material-ui/core/Tooltip';
 import DeleteIcon from '@material-ui/icons/Delete';
@@ -23,14 +24,15 @@ import FirstPageIcon from '@material-ui/icons/FirstPage';
 import KeyboardArrowLeft from '@material-ui/icons/KeyboardArrowLeft';
 import KeyboardArrowRight from '@material-ui/icons/KeyboardArrowRight';
 import LastPageIcon from '@material-ui/icons/LastPage';
-
-import './style/logtable.css';
+import { verifyToken } from '../../../config/Token';
+import { Redirect } from 'react-router-dom';
+import { getTimeKeepingTable } from '../../../config/Api';
 
 const actionsStyles = theme => ({
   root: {
     flexShrink: 0,
     color: theme.palette.text.secondary,
-    marginLeft: theme.spacing.unit * 2.5
+    marginLeft: theme.spacing.unit * 2.5,
   },
 });
 
@@ -105,18 +107,11 @@ const TablePaginationActionsWrapped = withStyles(actionsStyles, { withTheme: tru
   TablePaginationActions,
 );
 
-const styles = theme => ({
-  root: {
-    width: '100%',
-    marginTop: theme.spacing.unit * 3,
-  },
-  table: {
-    minWidth: 500,
-  },
-  tableWrapper: {
-    overflowX: 'auto',
-  },
-});
+let counter = 0;
+function createData(firstname, lastname, position, lastlog, actions) {
+  counter += 1;
+  return { id: counter, firstname, lastname, position, lastlog, actions };
+}
 
 function getSorting(order, orderBy) {
   return order === 'desc'
@@ -125,25 +120,36 @@ function getSorting(order, orderBy) {
 }
 
 const columnData = [
-  { id: 'id', numeric: true, disablePadding: false, label: '#' },
-  { id: 'datetime', numeric: false, disablePadding: false, label: 'Date & Time' },
-  { id: 'description', numeric: false, disablePadding: false, label: 'Remarks' },
-  { id: 'for_change', numeric: false, disablePadding: false, label: 'Subject For Change' },
-  // { id: 'protein', numeric: false, disablePadding: false, label: 'Verified' },
-  // { id: 'protein2', numeric: false, disablePadding: false, label: 'Verified' },
+  // { id: 'id', numeric: false, disablePadding: false, label: '#' },
+  { id: 'firstname', numeric: false, disablePadding: false, label: 'Last Name' },
+  { id: 'lastname', numeric: false, disablePadding: false, label: 'First Name' },
+  { id: 'position', numeric: false, disablePadding: false, label: 'Position' },
+  { id: 'lastlog', numeric: false, disablePadding: false, label: 'Last Time Log' },
+  { id: 'actions', numeric: false, disablePadding: false, label: 'Actions' },
 ];
 
-class LogTableHead extends React.Component {
+class EnhancedTableHead extends React.Component {
   createSortHandler = property => event => {
     this.props.onRequestSort(event, property);
   };
 
+  ComponentDidMount(){
+      console.log("MOUNTING TIMEKEEPING TABLE!!");
+  }
+
   render() {
-    const { order, orderBy } = this.props;
+    const { onSelectAllClick, order, orderBy, numSelected, rowCount } = this.props;
 
     return (
       <TableHead>
         <TableRow>
+          <TableCell padding="checkbox">
+            <Checkbox
+              indeterminate={numSelected > 0 && numSelected < rowCount}
+              checked={numSelected === rowCount}
+              onChange={onSelectAllClick}
+            />
+          </TableCell>
           {columnData.map(column => {
             return (
               <TableCell
@@ -174,9 +180,10 @@ class LogTableHead extends React.Component {
   }
 }
 
-LogTableHead.propTypes = {
+EnhancedTableHead.propTypes = {
   numSelected: PropTypes.number.isRequired,
   onRequestSort: PropTypes.func.isRequired,
+  onSelectAllClick: PropTypes.func.isRequired,
   order: PropTypes.string.isRequired,
   orderBy: PropTypes.string.isRequired,
   rowCount: PropTypes.number.isRequired,
@@ -207,7 +214,7 @@ const toolbarStyles = theme => ({
   },
 });
 
-let LogTableToolbar = props => {
+let EnhancedTableToolbar = props => {
   const { numSelected, classes } = props;
 
   return (
@@ -216,14 +223,14 @@ let LogTableToolbar = props => {
         [classes.highlight]: numSelected > 0,
       })}
     >
-      <div className={classes.title} style={{margin:"auto", marginBottom:"0px"}}>
+      <div className={classes.title}>
         {numSelected > 0 ? (
           <Typography color="inherit" variant="subheading">
             {numSelected} selected
           </Typography>
         ) : (
           <Typography variant="title" id="tableTitle">
-            Time Log
+            TimeKeeping (Employee List)
           </Typography>
         )}
       </div>
@@ -247,38 +254,95 @@ let LogTableToolbar = props => {
   );
 };
 
-LogTableToolbar.propTypes = {
+EnhancedTableToolbar.propTypes = {
   classes: PropTypes.object.isRequired,
   numSelected: PropTypes.number.isRequired,
 };
 
-LogTableToolbar = withStyles(toolbarStyles)(LogTableToolbar);
+EnhancedTableToolbar = withStyles(toolbarStyles)(EnhancedTableToolbar);
 
-// const styles = theme => ({
-//   root: {
-//     width: '100%',
-//     marginTop: theme.spacing.unit * 3,
-//   },
-//   table: {
-//     minWidth: 1020,
-//   },
-//   tableWrapper: {
-//     overflowX: 'auto',
-//   },
-// });
+const styles = theme => ({
+  root: {
+    width: '100%',
+    marginTop: theme.spacing.unit * 3,
+  },
+  table: {
+    minWidth: 1020,
+  },
+  tableWrapper: {
+    overflowX: 'auto',
+  },
+});
 
-class LogTable extends React.Component {
+class EnhancedTable extends React.Component {
   constructor(props) {
     super(props);
-    console.log(this.props.data.data);
+   
     this.state = {
       order: 'asc',
       orderBy: 'id',
       selected: [],
-      data: this.props.data.data,
+      data: [
+        createData('Cupcake', 305, 3.7, 67, 4.3),
+        createData('Donut', 452, 25.0, 51, 4.9),
+        createData('Eclair', 262, 16.0, 24, 6.0),
+        createData('Frozen yoghurt', 159, 6.0, 24, 4.0),
+        createData('Gingerbread', 356, 16.0, 49, 3.9),
+        createData('Honeycomb', 408, 3.2, 87, 6.5),
+        createData('Ice cream sandwich', 237, 9.0, 37, 4.3),
+        createData('Jelly Bean', 375, 0.0, 94, 0.0),
+        createData('KitKat', 518, 26.0, 65, 7.0),
+        createData('Lollipop', 392, 0.2, 98, 0.0),
+        createData('Marshmallow', 318, 0, 81, 2.0),
+        createData('Nougat', 360, 19.0, 9, 37.0),
+        createData('Oreo', 437, 18.0, 63, 4.0),
+      ],
+
       page: 0,
-      rowsPerPage: 8,
+      rowsPerPage: 10,
+      isLoggedIn:true
     };
+  }
+
+
+  componentDidMount(){
+      console.log("EmployeeTable Mounted!");
+      if(localStorage && localStorage.getItem('token') && localStorage.getItem('token') !== undefined){ 
+          const hasToken = verifyToken();
+          console.log("HAS TOKEN: "+hasToken);
+          hasToken.then(response => {
+              console.log(response);
+              if(response.status){
+                  this.setState({isLoggedIn:true});
+                  const emptable = getTimeKeepingTable();
+                  emptable.then((response) => {
+                  
+                    if(response.data.status){
+                        console.log("THIS IS THE DATA NOW IN TIMEKEEPING TABLE");
+                        console.log(response.data);
+                        this.setState({data:response.data.msg});
+                        console.log("THIS IS THE DATA NOW IN TIMEKEEPING TABLE");
+                        console.log(this.state.data);
+                        console.log("NEW STATE");
+                    }else{
+                        console.log("Database Error Encountered on Fetching Data");
+                        console.log(response);
+                    }
+                  }).catch((response) => {
+                    console.log("Connection Error Encountered on Fetching Data");
+                    console.log(response);
+                  });
+              }else{ 
+                  this.setState({isLoggedIn:false});
+              }
+          }).catch(function(response) {
+              //handle error
+              console.log(response);
+          });
+      }
+      else{
+          this.setState({isLoggedIn:false});
+      }
   }
 
   handleRequestSort = (event, property) => {
@@ -292,30 +356,65 @@ class LogTable extends React.Component {
     this.setState({ order, orderBy });
   };
 
+  handleSelectAllClick = (event, checked) => {
+    if (checked) {
+      this.setState({ selected: this.state.data.map(n => n.id) });
+      return;
+    }
+    this.setState({ selected: [] });
+  };
+
+  handleClick = (event, id) => {
+    const { selected } = this.state;
+    const selectedIndex = selected.indexOf(id);
+    let newSelected = [];
+
+    if (selectedIndex === -1) {
+      newSelected = newSelected.concat(selected, id);
+    } else if (selectedIndex === 0) {
+      newSelected = newSelected.concat(selected.slice(1));
+    } else if (selectedIndex === selected.length - 1) {
+      newSelected = newSelected.concat(selected.slice(0, -1));
+    } else if (selectedIndex > 0) {
+      newSelected = newSelected.concat(
+        selected.slice(0, selectedIndex),
+        selected.slice(selectedIndex + 1),
+      );
+    }
+
+    this.setState({ selected: newSelected });
+  };
+
   handleChangePage = (event, page) => {
     this.setState({ page });
   };
 
   handleChangeRowsPerPage = event => {
-    this.setState({ rowsPerPage: event.target.value });
+    (this.state.data.length<event.target.value) ? this.setState({rowsPerPage:this.state.data.length}) : this.setState({rowsPerPage:event.target.value});
   };
 
   isSelected = id => this.state.selected.indexOf(id) !== -1;
 
   render() {
+    if (!this.state.isLoggedIn) {
+      return <Redirect to={"/"} />;
+  };
+    
     const { classes } = this.props;
     const { data, order, orderBy, selected, rowsPerPage, page } = this.state;
     const emptyRows = rowsPerPage - Math.min(rowsPerPage, data.length - page * rowsPerPage);
-  
+
     return (
       <Paper className={classes.root}>
-        <LogTableToolbar numSelected={selected.length} />
+        <EnhancedTableToolbar numSelected={selected.length} />
         <div className={classes.tableWrapper}>
           <Table className={classes.table} aria-labelledby="tableTitle">
-            <LogTableHead
+            <EnhancedTableHead
               numSelected={selected.length}
               order={order}
-              orderBy={orderBy} onRequestSort={this.handleRequestSort}
+              orderBy={orderBy}
+              onSelectAllClick={this.handleSelectAllClick}
+              onRequestSort={this.handleRequestSort}
               rowCount={data.length}
             />
             <TableBody>
@@ -326,40 +425,43 @@ class LogTable extends React.Component {
                   const isSelected = this.isSelected(n.id);
                   return (
                     <TableRow
+                      hover
+                      onClick={event => this.handleClick(event, n.id)}
                       aria-checked={isSelected}
                       tabIndex={-1}
                       key={n.id}
                       selected={isSelected}
-                      className={n.description}
                     >
-                      <TableCell numeric>
-                       {n.id}
+                      <TableCell key={n.id} padding="checkbox">
+                         <Checkbox checked={isSelected} /> 
                       </TableCell>
                       <TableCell component="th" scope="row" padding="none">
-                        {n.datetime}
+                        {n.last_name}
                       </TableCell>
-                      <TableCell>{n.description}</TableCell>
-                      <TableCell>{n.for_change}</TableCell>
+                      <TableCell numeric>{n.first_name}</TableCell>
+                      <TableCell numeric>{n.pos_title}</TableCell>
+                      <TableCell numeric>{n.max}</TableCell>
+                      <TableCell numeric>{n.protein}</TableCell>
                     </TableRow>
                   );
                 })}
               {emptyRows > 0 && (
-                <TableRow style={{ height: 47.5* emptyRows }}>
-                  <TableCell colSpan={4} />
+                <TableRow style={{ height: 49 * emptyRows }}>
+                  <TableCell colSpan={7} />
                 </TableRow>
               )}
             </TableBody>
             <TableFooter>
               <TableRow>
                 <TablePagination
-                  colSpan={4}
+                  colSpan={7}
                   count={data.length}
                   rowsPerPage={rowsPerPage}
                   page={page}
                   onChangePage={this.handleChangePage}
                   onChangeRowsPerPage={this.handleChangeRowsPerPage}
                   ActionsComponent={TablePaginationActionsWrapped}
-                  rowsPerPageOptions={[8]}
+                  rowsPerPageOptions={[10, 25, 50, 100]}
                 />
               </TableRow>
             </TableFooter>
@@ -370,8 +472,8 @@ class LogTable extends React.Component {
   }
 }
 
-LogTable.propTypes = {
+EnhancedTable.propTypes = {
   classes: PropTypes.object.isRequired,
 };
 
-export default withStyles(styles)(LogTable);
+export default withStyles(styles)(EnhancedTable);

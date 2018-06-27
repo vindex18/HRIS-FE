@@ -23,7 +23,7 @@ const styles = theme => ({
   paper: {
     position: 'absolute',
     width: theme.spacing.unit * 160,
-    height: theme.spacing.unit * 70,
+    height: theme.spacing.unit * 80,
     backgroundColor: theme.palette.background.paper,
     boxShadow: '#f50057', //theme.shadows[5],
     padding: theme.spacing.unit * 4,

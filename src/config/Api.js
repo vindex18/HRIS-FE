@@ -1,5 +1,6 @@
 import axios from 'axios';
-
+import React from 'react';
+import { Redirect } from 'react-router-dom';
 
 export const api_url = () => {
     return 'http://localhost/hris-api/public';
@@ -70,10 +71,67 @@ export const getTimeCardConfig = (props) => {
         })
         .then((response) => {
             //handle success
-            //console.log(response);
             if(response.data.status){ // if valid
                 return resolve(response.data.log);
             }else if(!response.data.status){ // if invalid   
+                console.log("Error Time Card");
+            }
+        })
+        .catch(function(response) {
+            //handle error
+            console.log(response);
+        });
+    });
+}
+
+export const getTimeKeepingTable = () => { //For Admin Timekeeping Table 1
+    let bodyFormData = new FormData();
+    let token = localStorage.getItem('token');
+
+    return new Promise( function(resolve) {
+        axios({
+            method: 'get',
+            url: api_url() +'/attendance/allemployee/+/+/', //Default Config
+            headers: {'Content-Type': 'application/json', 'Authorization': token }
+        })
+        .then((response) => {
+            //handle success
+            console.log("FOR CHECKING");
+            console.log(response.data.status);
+            console.log("FOR CHECKING");
+
+            if(response.data.status){ // if valid
+                return resolve(response);
+            }else if(!response.data.status){ // if invalid   
+                console.log("Error Encountered on Fetching Data");
+                return resolve(response);
+                
+            }
+        })
+        .catch(function(response) {
+            //handle error
+            console.log(response);
+        });
+    });
+}
+
+export const getEmployeeTable = () => {
+    let bodyFormData = new FormData();
+    let token = localStorage.getItem('token');
+
+    return new Promise( function(resolve) {
+        axios({
+            method: 'get',
+            url: api_url() +'/employees', //Default Config
+            headers: {'Content-Type': 'application/json', 'Authorization': token }
+        })
+        .then((response) => {
+            //handle success
+            console.log(response);
+            if(response.data.status){ // if valid
+                return resolve(response);
+            }else if(!response.data.status){ // if invalid   
+                return resolve(response);
                 console.log("Error Time Card");
             }
         })
@@ -91,7 +149,7 @@ export const getTimeLog = () => {
     return new Promise( function(resolve) {
         axios({
             method: 'get',
-            url: api_url() +'/attendance/employee/+/+/Kw%3D%3D',
+            url: api_url() +'/attendance/employee/+/+/Kw%3D%3D', //Default Config
             data: bodyFormData,
             headers: {'Content-Type': 'application/json', 'Authorization': token }
         })
@@ -111,7 +169,6 @@ export const getTimeLog = () => {
 }
 
 export const sendLog = (tag) => {
-    
     let bodyFormData = new FormData();
     let token = localStorage.getItem('token');
     bodyFormData.set('tag', tag);

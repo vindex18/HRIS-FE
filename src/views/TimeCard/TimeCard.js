@@ -147,60 +147,69 @@ class TimeCard extends Component {
         this.setState({msg:''});
         console.log("Start of Log");
         // const logstat = sendLog(this.state.nextpunch); //Working
-        const logstat = sendLog(tag);
-        console.log(tag);
-        logstat.then(response => {
-            console.log("FINISHED!"); 
-            //console.log(this.state.nextpunch+ " --- " +response.log.log.last_punch);
-            console.log(response);
-            console.log("END OF FINISHED!");
-            console.log("SHOWINNNNNNNNNNGGGGGGGGGGGGGGGGG!");
-            this.setState({
-                confirmDiaLog:"",
-                lastpunch: response.log.log.last_punch, //response.last_punch,
-                lastpunchdesc: response.log.log.lastpunch_desc,
-                lastpunchdt: response.log.log.lastpunch_dt,
-                nextpunch:response.log.log.next_punch,
-                nextpunchdesc: response.log.log.nextpunch_desc,   
-                msg: <Notif msg={response.msg} />,
-                showMsg: response.msg,
-                //statshowMsg: response.
+        if(localStorage && localStorage.getItem('token') && localStorage.getItem('token') !== undefined){ 
+            const logstat = sendLog(tag);
+            console.log(tag);
+            logstat.then(response => {
+                console.log("FINISHED!"); 
+                //console.log(this.state.nextpunch+ " --- " +response.log.log.last_punch);
+                console.log(response);
+                console.log("END OF FINISHED!");
+                console.log("SHOWINNNNNNNNNNGGGGGGGGGGGGGGGGG!");
+                this.setState({
+                    confirmDiaLog:"",
+                    lastpunch: response.log.log.last_punch, //response.last_punch,
+                    lastpunchdesc: response.log.log.lastpunch_desc,
+                    lastpunchdt: response.log.log.lastpunch_dt,
+                    nextpunch:response.log.log.next_punch,
+                    nextpunchdesc: response.log.log.nextpunch_desc,   
+                    msg: <Notif msg={response.msg} />,
+                    showMsg: response.msg,
+                    //statshowMsg: response.
+                });
+                this.handleUpdateTimeCardContent(response.log.log.last_punch);
+                console.log("SHOWINNNNNNNNNNGGGGGGGGGGGGGGGGG!");
             });
-            this.handleUpdateTimeCardContent(response.log.log.last_punch);
-            console.log("SHOWINNNNNNNNNNGGGGGGGGGGGGGGGGG!");
-        });
-        console.log("End of Log...");
+            console.log("End of Log...");
+        }else{
+            console.log("I DONT HAVE TOKEN IN TIME CARD!");
+            this.setState({isLoggedIn: false});       
+        }
     }
 
     showTimeLog = (e) => {
         e.preventDefault();
-        const logstat = getTimeLog();
-            logstat.then(response => {
-            console.log("FINISHED!"); 
-            console.log(response);
-            console.log("END OF FINISHED!");
-            
-            console.log("THIS IS THE DATA!");
-            console.log(response.data);
-            console.log("THIS IS THE DATA!");
+        if(localStorage && localStorage.getItem('token') && localStorage.getItem('token') !== undefined){ 
+            const logstat = getTimeLog();
+                logstat.then(response => {
+                console.log("FINISHED!"); 
+                console.log(response);
+                console.log("END OF FINISHED!");
+                console.log("THIS IS THE DATA!");
+                console.log(response.data);
+                console.log("THIS IS THE DATA!");
 
-            if(this.state.showTimeLog){
-                console.log("CLEARING");
-                this.setState({showTimeLog:''});
-            }else{
-                console.log("CALLING");
-                this.setState({showTimeLog:''});
-                this.setState({
-                    showTimeLog:<TimeLog 
-                    clear={() => this.closeTimeLog()} 
-                    data={response.data} 
-                    name={this.state.firstname+" "+this.state.lastname}
-                    position={this.state.postitle}
-                    />
-                });
-            } 
-            console.log(this.state.showTimeLog);
-        });
+                if(this.state.showTimeLog){
+                    console.log("CLEARING");
+                    this.setState({showTimeLog:''});
+                }else{
+                    console.log("CALLING");
+                    this.setState({showTimeLog:''});
+                    this.setState({
+                        showTimeLog:<TimeLog 
+                        clear={() => this.closeTimeLog()} 
+                        data={response.data} 
+                        name={this.state.firstname+" "+this.state.lastname}
+                        position={this.state.postitle}
+                        />
+                    });
+                } 
+                console.log(this.state.showTimeLog);
+            });
+        }else{
+            console.log("I DONT HAVE TOKEN IN TIME CARD!");
+            this.setState({isLoggedIn: false});       
+        }
     }
 
     componentWillMount(){
@@ -229,8 +238,7 @@ class TimeCard extends Component {
                 if(response.last_punch)
                     this.setState({showMsg:"Your Last Log ("+response.lastpunch_desc+") at "+response.lastpunch_dt});
                     //Update Time Card Component
-                
-                //Temp
+             
                 const theme = createMuiTheme({
                     palette: {
                       primary: indigo,
@@ -279,14 +287,14 @@ class TimeCard extends Component {
                         </li>
                     })
                 }
-                //Temp
+              
             });
             
             //console.log(this.state);         
         }
         else{
             console.log("I DONT HAVE TOKEN IN TIME CARD!");
-            this.setState({auth: false});        
+            this.setState({isLoggedIn: false});        
         }
     }
 
@@ -419,7 +427,7 @@ class TimeCard extends Component {
                             <Avatar alt="Logo" src={logo} style={styles.avatar} />
                         </div>
                         <div style={styles.divider}>
-                        <Typography variant="display1" style={{fontSize:"145%", paddingBottom:"5px"}} >{this.state.firstname} {/*this.state.middlename*/} {this.state.lastname}</Typography>
+                        <Typography variant="display1" style={{fontSize:"145%", paddingBottom:"0px"}} >{this.state.firstname} {/*this.state.middlename*/} {this.state.lastname}</Typography>
                         <Typography variant="body1" >{this.state.postitle}</Typography>
                         <a><Tooltip id="tooltip-top" title="Click to show your Time Log" placement="top">
                         <Typography variant="body2" onClick={(e) => this.showTimeLog(e)}>

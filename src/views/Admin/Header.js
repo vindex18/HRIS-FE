@@ -7,14 +7,13 @@ import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import List from '@material-ui/core/List';
 import Typography from '@material-ui/core/Typography';
-import Divider from '@material-ui/core/Divider';
 import IconButton from '@material-ui/core/IconButton';
 import MenuIcon from '@material-ui/icons/Menu';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import ChevronRightIcon from '@material-ui/icons/ChevronRight';
-import { mailFolderListItems, otherMailFolderListItems } from './tileData';
+import SidebarItems from './SidebarItems';
 import logo from "../../assets/img/InventoBrandingLogo.svg"
-import { decodeToken } from '../../config/Token';
+import { verifyToken, decodeToken } from '../../config/Token';
 import Notifications from '@material-ui/icons/Notifications';
 import Chat from '@material-ui/icons/Chat';
 import Settings from '@material-ui/icons/Settings';
@@ -25,23 +24,15 @@ import ExpandMore from '@material-ui/icons/ExpandMore';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import Dashboard from './Dashboard/Dashboard';
-import Row1 from './Employee/Row1';
-import Timekeeping from './Timekeeping/Timekeeping';
+import EmployeeTable from './Employee/EmployeeTable';
+import TimekeepingTable from './Timekeeping/TimekeepingTable';
 import Leave from './Leave/Leave';
 
 import Error404 from './../../views/Error/404.js';
-
+import { Redirect } from 'react-router-dom';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 
-
 const drawerWidth = 300;
-
-// const options = [
-//     'Home',
-//     'Settings',
-//     'Notification',
-//     'Logout',
-// ];
 
 const ITEM_HEIGHT = 48;
 
@@ -122,8 +113,12 @@ class Home extends Component {
         anchorEl: null,
         open: false,
         firstname: "",
+        middlename:"",
+        lastname:"",
+        postitle:"",
         email: "",
-        isLoggedIn:""
+        isLoggedIn:true,
+        mainContent:""
     };
 
     handleDrawerOpen = () => {
@@ -142,18 +137,52 @@ class Home extends Component {
         this.setState({ anchorEl: null });
     };
 
+    handleTimeCard = () => {
+        this.setState({showTimeLog:true});
+    }
+
     handleLogout = () => {
         localStorage.clear();
         this.setState({ isLoggedIn: false });
     }
 
-    componentWillMount() {
-        console.log("WILL MOUNT TIME CARD: " + this.state);
-        if (localStorage && localStorage.getItem('token')) {
-            this.setState({ auth: decodeToken(this.state) });
-        } else {
-            //Redirect To LOGIN NOT FINISHED....
+    renderData = (data, module) => {
+        console.log("Data successfully Transferred");
+        console.log(data);
+        console.log(module);
+        switch(module){
+            // case 0: break; //Dashboard
+            // case 1: break; //Employee
+            case 2: 
+                    this.setState({mainContent:<TimekeepingTable data={data}/>});
+                    console.log(this.state.mainContent);
+                    break;
+            // case 3: break;
+            default: break;
+        }
+        console.log("Data successfully Transferred");
+    }
 
+    componentWillMount(){
+        console.log("Component Mounted!");
+        if(localStorage && localStorage.getItem('token') && localStorage.getItem('token') !== undefined){ 
+            const hasToken = verifyToken();
+            console.log("HAS TOKEN: "+hasToken);
+            hasToken.then(response => {
+                console.log(response);
+                if(response.status){
+                     decodeToken(this.state);
+                     this.setState({isLoggedIn:true});
+                 }else{ 
+                     this.setState({isLoggedIn:false});
+                 }
+            }).catch(function(response) {
+                //handle error
+                console.log(response);
+            });
+        }
+        else{
+            this.setState({isLoggedIn:false});
         }
     }
 
@@ -161,14 +190,21 @@ class Home extends Component {
         const { classes, theme } = this.props;
         const { anchorEl } = this.state;
 
+        if(this.state.isLoggedIn===false){
+            return <Redirect to={"/"}/>;
+        }
+
+        if(this.state.showTimeLog===true){
+            return <Redirect to={"/TimeCard"}/>;
+        }
+
         return (
-            <Router>
+                <Router>
                 <div className={classes.root}>
                     <AppBar
                         position="absolute"
                         className={classNames(classes.appBar, this.state.open && classes.appBarShift)}
                     >
-
                         <Toolbar disableGutters={!this.state.open}>
                             <IconButton
                                 color="inherit"
@@ -179,30 +215,21 @@ class Home extends Component {
                             >
                                 <MenuIcon />
                             </IconButton>
-                            {/* <Typography variant="title" color="inherit" noWrap>
-                                Mini variant drawer
-                            </Typography> */}
                             <section className={classes.rightToolbar}>
-
                                 <IconButton>
                                     <Settings />
                                 </IconButton>
-
                                 <IconButton>
                                     <Chat />
                                 </IconButton>
-
                                 <IconButton>
                                     <Notifications />
                                 </IconButton>
                             </section>
                             <Typography type="title" style={{ borderCollapse: "separate", borderSpacing: "0", borderLeft: '0.1em solid silver', padding: '1.5em' }} />
-
                             <Typography type="title">
                                 {this.state.firstname}
                             </Typography>
-
-
                             <div>
                                 <IconButton
                                     aria-label="More"
@@ -223,12 +250,8 @@ class Home extends Component {
                                             width: 200,
                                         },
                                     }} >
-                                    {/* {options.map(option => (
-                                        <MenuItem key={option} selected={option === 'Pyxis'} onClick={this.handleClose}>
-                                            {option}
-                                        </MenuItem>
-                                    ))} */}
-                                <MenuItem key={"Account Settings"}  onClick={this.handleClose}> {/*selected={option === 'Pyxis'*/}
+                                <MenuItem key={"My Timecard"} onClick={this.handleTimeCard}>My Timecard</MenuItem>
+                                <MenuItem key={"Account Settings"}  onClick={this.handleClose}>
                                     Account Settings
                                 </MenuItem>
                                 <MenuItem key={"Logout"} onClick={this.handleLogout}>
@@ -254,22 +277,13 @@ class Home extends Component {
                                 {theme.direction === 'rtl' ? <ChevronRightIcon /> : <ChevronLeftIcon />}
                             </IconButton>
                         </div>
-                        <Divider />
-                        <List>{mailFolderListItems}</List>
-                        <Divider />
-                        <List>{otherMailFolderListItems}</List>
+                        <List><SidebarItems renderData={this.renderData}/></List>
                     </Drawer>
-
-                    {/* Main Body Page */}
-                    <main className={classes.content}>
-
-                        <div className={classes.toolbar} />
+                    <main className={classes.content} style={{overflow:"auto"}} > {/*style={{overflowY:'scroll'}}*/}
+                        <div className={classes.toolbar}/>
                         <Switch>
-                            <Route path="/admin" component={Dashboard} exact />
-                            <Route path="/admin/employee" component={Row1} exact />
-                            <Route path="/admin/timekeeping" component={Timekeeping} exact />
-                            <Route path="/admin/leave" component={Leave} exact />
-                            <Route component={Error404} exact />
+                        {this.state.mainContent}
+                        <Route path="/admin/timekeeping" component={TimekeepingTable}/>
                         </Switch>
                     </main>
                 </div>

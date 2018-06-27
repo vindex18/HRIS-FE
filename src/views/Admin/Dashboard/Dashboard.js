@@ -2,13 +2,13 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import Card from '@material-ui/core/Card';
-import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
-import Button from '@material-ui/core/Button';
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
-
 import { Group, Block, Error, Warning } from '@material-ui/icons';
+import { verifyToken } from '../../../config/Token';
+import { Redirect } from 'react-router-dom';
+
 
 const styles = theme => ({
     root: {
@@ -45,19 +45,43 @@ const styles = theme => ({
 
 });
 
+
 class Dashboard extends Component {
+
+    state = {
+        isLoggedIn:true
+    }
+    
+    componentWillMount(){
+        console.log("Dashboard Mounting");
+        if(localStorage && localStorage.getItem('token') && localStorage.getItem('token') !== undefined){ 
+            const hasToken = verifyToken();
+            console.log(hasToken);
+            hasToken.then(response => {
+                console.log(response);
+                (response.status) ? this.setState({isLoggedIn:true}) : this.setState({isLoggedIn:false});
+            }).catch(function(response) {
+                //handle error
+                console.log(response);
+            });
+        }
+        else{
+            this.setState({isLoggedIn:false});
+        }
+    }
+
     render() {
+        if (!this.state.isLoggedIn) {
+            return <Redirect to={"/"} />;
+        };
+
         const { classes } = this.props;
-            
-
         return (
-
             <Grid container className={classes.root} spacing={8}>
                 <Grid container spacing={8}>
                     <Grid item xs={12} sm={3}>
                         <Card className={classes.card} style={{ backgroundColor: "#152C55" }}>
                             <CardContent>
-
                                 <div className={classes.controls}>
                                     <Group style={{ width: 120, height: 120, position: "relative", right: "20px",  color: "#FDFDFD" }} />
                                     <div className={classes.cardDisplay}>
@@ -85,13 +109,10 @@ class Dashboard extends Component {
                     </Grid>
 
                     <Grid item xs={12} sm={3}>
-                        <Card className={classes.card} style={{ backgroundColor: "#791422" }}>
+                        <Card className={classes.card} style={{backgroundColor: "#791422"}}>
                             <CardContent>
-
                                 <div className={classes.controls}>
                                     <Block style={{ width: 120, height: 120, position: "relative", right: "20px",  color: "#FDFDFD" }} />
-
-
                                     <div className={classes.cardDisplay}>
                                         <Typography variant="title" component="h2" style={{ color: "white", margin: "auto", textAlign: "right", }} >
                                             0
@@ -101,7 +122,6 @@ class Dashboard extends Component {
                                         </Typography>
                                     </div>
                                 </div>
-
                             </CardContent>
                         </Card>
                     </Grid>
