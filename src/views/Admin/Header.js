@@ -23,10 +23,8 @@ import displayPicture from "../../assets/img/avatar.jpg";
 import ExpandMore from '@material-ui/icons/ExpandMore';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
-import Dashboard from './Dashboard/Dashboard';
-import EmployeeTable from './Employee/EmployeeTable';
 import TimekeepingTable from './Timekeeping/TimekeepingTable';
-import Leave from './Leave/Leave';
+import TimekeepingTable1 from './Timekeeping/TimekeepingTable1';
 
 import Error404 from './../../views/Error/404.js';
 import { Redirect } from 'react-router-dom';
@@ -146,18 +144,23 @@ class Home extends Component {
         this.setState({ isLoggedIn: false });
     }
 
+    viewEmployeeTimeLog = (id) => {
+        console.log("THIS IS THE IDDD!!");
+        console.log(id);
+        console.log("THIS IS THE IDDD!!");
+        this.setState({mainContent:<TimekeepingTable1 id={id}/>});
+    }
+
     renderData = (data, module) => {
         console.log("Data successfully Transferred");
         console.log(data);
         console.log(module);
         switch(module){
-            // case 0: break; //Dashboard
-            // case 1: break; //Employee
-            case 2: 
-                    this.setState({mainContent:<TimekeepingTable data={data}/>});
+          
+            case 2: this.setState({mainContent:<TimekeepingTable viewLog={this.viewEmployeeTimeLog} data={data}/>});
                     console.log(this.state.mainContent);
                     break;
-            // case 3: break;
+            
             default: break;
         }
         console.log("Data successfully Transferred");
@@ -189,7 +192,7 @@ class Home extends Component {
     render() {
         const { classes, theme } = this.props;
         const { anchorEl } = this.state;
-
+        
         if(this.state.isLoggedIn===false){
             return <Redirect to={"/"}/>;
         }
@@ -198,9 +201,7 @@ class Home extends Component {
             return <Redirect to={"/TimeCard"}/>;
         }
 
-        return (
-                <Router>
-                <div className={classes.root}>
+        return (<div className={classes.root}>
                     <AppBar
                         position="absolute"
                         className={classNames(classes.appBar, this.state.open && classes.appBarShift)}
@@ -237,7 +238,7 @@ class Home extends Component {
                                     aria-haspopup="true"
                                     onClick={this.handleClick}
                                 >
-                                    <ExpandMore />
+                                <ExpandMore />
                                 </IconButton>
                                 <Menu
                                     id="long-menu"
@@ -281,13 +282,10 @@ class Home extends Component {
                     </Drawer>
                     <main className={classes.content} style={{overflow:"auto"}} > {/*style={{overflowY:'scroll'}}*/}
                         <div className={classes.toolbar}/>
-                        <Switch>
                         {this.state.mainContent}
-                        <Route path="/admin/timekeeping" component={TimekeepingTable}/>
-                        </Switch>
                     </main>
                 </div>
-            </Router>
+          
         );
     }
 }

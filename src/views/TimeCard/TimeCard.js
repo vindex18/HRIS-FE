@@ -147,13 +147,14 @@ class TimeCard extends Component {
         this.setState({msg:''});
         console.log("Start of Log");
         // const logstat = sendLog(this.state.nextpunch); //Working
+        console.log('---------------');
         if(localStorage && localStorage.getItem('token') && localStorage.getItem('token') !== undefined){ 
             const logstat = sendLog(tag);
             console.log(tag);
             logstat.then(response => {
                 console.log("FINISHED!"); 
                 //console.log(this.state.nextpunch+ " --- " +response.log.log.last_punch);
-                console.log(response);
+                console.log(response.log.log);
                 console.log("END OF FINISHED!");
                 console.log("SHOWINNNNNNNNNNGGGGGGGGGGGGGGGGG!");
                 this.setState({
@@ -181,12 +182,9 @@ class TimeCard extends Component {
         e.preventDefault();
         if(localStorage && localStorage.getItem('token') && localStorage.getItem('token') !== undefined){ 
             const logstat = getTimeLog();
-                logstat.then(response => {
-                console.log("FINISHED!"); 
-                console.log(response);
-                console.log("END OF FINISHED!");
+            logstat.then(response => {
                 console.log("THIS IS THE DATA!");
-                console.log(response.data);
+                console.log(response.msg);
                 console.log("THIS IS THE DATA!");
 
                 if(this.state.showTimeLog){
@@ -198,13 +196,12 @@ class TimeCard extends Component {
                     this.setState({
                         showTimeLog:<TimeLog 
                         clear={() => this.closeTimeLog()} 
-                        data={response.data} 
+                        data={response.msg} 
                         name={this.state.firstname+" "+this.state.lastname}
                         position={this.state.postitle}
                         />
                     });
                 } 
-                console.log(this.state.showTimeLog);
             });
         }else{
             console.log("I DONT HAVE TOKEN IN TIME CARD!");
@@ -262,7 +259,7 @@ class TimeCard extends Component {
                         <Button style={{position: "relative", top: "50px", left: "20%", height: "50px", width: "185px", color: theme.palette.getContrastText("#A0446A"), backgroundColor: "#A0446A", '&:hover': { backgroundColor: "#A0446A", },}} variant="contained" color="secondary" onClick={(e) => this.showConfirmTimeLog(e, 4, "Time-out")}>
                         {"Time-out"}</Button>
                         </li>
-                    })
+                    });
                 }else if(response.last_punch===3){
                     this.setState({
                         tccont:<li style={{marginBottom: "5%", marginLeft: "-32%",}}>
@@ -271,27 +268,25 @@ class TimeCard extends Component {
                         <Button style={{position: "relative", top: "50px", left: "20%", height: "50px", width: "185px", color: theme.palette.getContrastText("#A0446A"), backgroundColor: "#A0446A", '&:hover': { backgroundColor: "#A0446A", },}} variant="contained" color="secondary" onClick={(e) => this.showConfirmTimeLog(e, 4, "Time-Out")}>
                         {"Time-out"}</Button>
                         </li>
-                    })
+                    });
                 }else if(response.last_punch===4){
                     this.setState({
                         tccont: <li style={{marginBottom: "5%"}}>
                         <Button style={{position: "relative", top: "50px", left: "15%", height: "50px", width: "185px", color: theme.palette.getContrastText("#A0446A"), backgroundColor: "#A0446A", '&:hover': { backgroundColor: "#A0446A", },}} variant="contained" color="secondary" onClick={(e) => this.showConfirmTimeLog(e, 1, "Time-In")}>
                             {this.state.nextpunchdesc}</Button>
                         </li>
-                    })
+                    });
                 }else{
                     this.setState({
                         tccont: <li style={{marginBottom: "5%"}}>
                         <Button style={{position: "relative", top: "50px", left: "15%", height: "50px", width: "185px", color: theme.palette.getContrastText("#A0446A"), backgroundColor: "#A0446A", '&:hover': { backgroundColor: "#A0446A", },}} variant="contained" color="secondary" onClick={(e) => this.showConfirmTimeLog(e, 1, "Time-In")}>
                             {"Time-In"}</Button>
                         </li>
-                    })
+                    });
                 }
               
             });
-            
-            //console.log(this.state);         
-        }
+         }
         else{
             console.log("I DONT HAVE TOKEN IN TIME CARD!");
             this.setState({isLoggedIn: false});        

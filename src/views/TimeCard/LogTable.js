@@ -270,12 +270,11 @@ LogTableToolbar = withStyles(toolbarStyles)(LogTableToolbar);
 class LogTable extends React.Component {
   constructor(props) {
     super(props);
-    console.log(this.props.data.data);
     this.state = {
       order: 'asc',
       orderBy: 'id',
       selected: [],
-      data: this.props.data.data,
+      data: this.props.data,
       page: 0,
       rowsPerPage: 8,
     };
@@ -333,7 +332,7 @@ class LogTable extends React.Component {
                       className={n.description}
                     >
                       <TableCell numeric>
-                       {n.id}
+                       {n.seq}
                       </TableCell>
                       <TableCell component="th" scope="row" padding="none">
                         {n.datetime}

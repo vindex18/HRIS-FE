@@ -19,7 +19,6 @@ import DeleteIcon from '@material-ui/icons/Delete';
 import FilterListIcon from '@material-ui/icons/FilterList';
 import { lighten } from '@material-ui/core/styles/colorManipulator';
 
-import Button from '@material-ui/core/Button';
 import TableFooter from '@material-ui/core/TableFooter';
 import FirstPageIcon from '@material-ui/icons/FirstPage';
 import KeyboardArrowLeft from '@material-ui/icons/KeyboardArrowLeft';
@@ -27,8 +26,7 @@ import KeyboardArrowRight from '@material-ui/icons/KeyboardArrowRight';
 import LastPageIcon from '@material-ui/icons/LastPage';
 import { verifyToken } from '../../../config/Token';
 import { Redirect } from 'react-router-dom';
-import { getTimeKeepingTable, getTimeKeepingTable1 } from '../../../config/Api';
-import { Link } from 'react-router-dom';
+import { getTimeKeepingTable1 } from '../../../config/Api';
 
 const actionsStyles = theme => ({
   root: {
@@ -109,6 +107,12 @@ const TablePaginationActionsWrapped = withStyles(actionsStyles, { withTheme: tru
   TablePaginationActions,
 );
 
+let counter = 0;
+function createData(name, calories, fat, carbs, protein) {
+  counter += 1;
+  return { id: counter, name, calories, fat, carbs, protein };
+}
+
 function getSorting(order, orderBy) {
   return order === 'desc'
     ? (a, b) => (b[orderBy] < a[orderBy] ? -1 : 1)
@@ -116,23 +120,17 @@ function getSorting(order, orderBy) {
 }
 
 const columnData = [
-  // { id: 'id', numeric: false, disablePadding: false, label: '#' },
-  { id: 'last_name', numeric: false, disablePadding: false, label: 'Last Name' },
-  { id: 'first_name', numeric: false, disablePadding: false, label: 'First Name' },
-  { id: 'pos_title', numeric: false, disablePadding: false, label: 'Position' },
-  { id: 'description', numeric: false, disablePadding: false, label: 'Last Time Log' },
-  { id: 'actions', numeric: false, disablePadding: false, label: 'Actions' },
+  { id: 'seq', numeric: false, disablePadding: false, label: '#' },
+  { id: 'datetime', numeric: false, disablePadding: false, label: 'Date & Time' },
+  { id: 'remarks', numeric: false, disablePadding: false, label: 'Remarks' },
+  { id: 'forchange', numeric: false, disablePadding: false, label: 'Subject For Change' },
+  { id: 'action', numeric: false, disablePadding: false, label: 'Actions' },
 ];
 
-class EnhancedTableHead extends React.Component {
+class TimekeepingTable1Head extends React.Component {
   createSortHandler = property => event => {
     this.props.onRequestSort(event, property);
   };
-  
-  state = {
-    name:this.props.name,
-    position:this.props.position
-  }
 
   render() {
     const { onSelectAllClick, order, orderBy, numSelected, rowCount } = this.props;
@@ -140,18 +138,18 @@ class EnhancedTableHead extends React.Component {
     return (
       <TableHead>
         <TableRow>
-          <TableCell padding="checkbox" numeric>
+          <TableCell padding="checkbox">
             <Checkbox
               indeterminate={numSelected > 0 && numSelected < rowCount}
               checked={numSelected === rowCount}
               onChange={onSelectAllClick}
+             
             />
           </TableCell>
           {columnData.map(column => {
             return (
               <TableCell
                 key={column.id}
-                numeric={column.numeric}
                 padding={column.disablePadding ? 'none' : 'default'}
                 sortDirection={orderBy === column.id ? order : false}
               >
@@ -177,7 +175,7 @@ class EnhancedTableHead extends React.Component {
   }
 }
 
-EnhancedTableHead.propTypes = {
+TimekeepingTable1Head.propTypes = {
   numSelected: PropTypes.number.isRequired,
   onRequestSort: PropTypes.func.isRequired,
   onSelectAllClick: PropTypes.func.isRequired,
@@ -211,9 +209,9 @@ const toolbarStyles = theme => ({
   },
 });
 
-let EnhancedTableToolbar = props => {
-  const { numSelected, classes } = props;
-
+let TimekeepingTable1Toolbar = props => {
+  const { numSelected, classes, name, position } = props;
+    console.log(" time: ", props);
   return (
     <Toolbar
       className={classNames(classes.root, {
@@ -227,7 +225,7 @@ let EnhancedTableToolbar = props => {
           </Typography>
         ) : (
           <Typography variant="title" id="tableTitle">
-            TimeKeeping (Employee List)
+            Time Logs of {name} {position}
           </Typography>
         )}
       </div>
@@ -251,12 +249,12 @@ let EnhancedTableToolbar = props => {
   );
 };
 
-EnhancedTableToolbar.propTypes = {
+TimekeepingTable1Toolbar.propTypes = {
   classes: PropTypes.object.isRequired,
   numSelected: PropTypes.number.isRequired,
 };
 
-EnhancedTableToolbar = withStyles(toolbarStyles)(EnhancedTableToolbar);
+TimekeepingTable1Toolbar = withStyles(toolbarStyles)(TimekeepingTable1Toolbar);
 
 const styles = theme => ({
   root: {
@@ -271,23 +269,38 @@ const styles = theme => ({
   },
 });
 
-class EnhancedTable extends React.Component {
+class TimekeepingTable1 extends React.Component {
   constructor(props) {
     super(props);
-   
+    console.log(props);
     this.state = {
       order: 'asc',
       orderBy: 'id',
       selected: [],
+    //   data: [
+    //     createData('Cupcake', 305, 3.7, 67, 4.3),
+    //     createData('Donut', 452, 25.0, 51, 4.9),
+    //     createData('Eclair', 262, 16.0, 24, 6.0),
+    //     createData('Frozen yoghurt', 159, 6.0, 24, 4.0),
+    //     createData('Gingerbread', 356, 16.0, 49, 3.9),
+    //     createData('Honeycomb', 408, 3.2, 87, 6.5),
+    //     createData('Ice cream sandwich', 237, 9.0, 37, 4.3),
+    //     createData('Jelly Bean', 375, 0.0, 94, 0.0),
+    //     createData('KitKat', 518, 26.0, 65, 7.0),
+    //     createData('Lollipop', 392, 0.2, 98, 0.0),
+    //     createData('Marshmallow', 318, 0, 81, 2.0),
+    //     createData('Nougat', 360, 19.0, 9, 37.0),
+    //     createData('Oreo', 437, 18.0, 63, 4.0),
+    //   ],
       data: [],
       page: 0,
-      rowsPerPage: 0,
+      name:'',
+      rowsPerPage: 10,
       isLoggedIn:true
     };
   }
 
   componentDidMount(){
-      console.log("EmployeeTable Mounted!");
       if(localStorage && localStorage.getItem('token') && localStorage.getItem('token') !== undefined){ 
           const hasToken = verifyToken();
           console.log("HAS TOKEN: "+hasToken);
@@ -295,23 +308,19 @@ class EnhancedTable extends React.Component {
               console.log(response);
               if(response.status){
                   this.setState({isLoggedIn:true});
-                  const emptable = getTimeKeepingTable();
-                  emptable.then((response) => {
-                    if(response.data.status){
-                        console.log("THIS IS THE DATA NOW IN TIMEKEEPING TABLE");
-                        console.log(response.data);
-                        this.setState({data:response.data.msg, rowsPerPage:response.data.msg.length});
-                        console.log("THIS IS THE DATA NOW IN TIMEKEEPING TABLE");
-                        console.log(this.state.data);
-                        console.log("NEW STATE");
-                    }else{
-                        console.log("Database Error Encountered on Fetching Data");
+                  const timelog = getTimeKeepingTable1(this.props.id);
+                  timelog.then(response => {
                         console.log(response);
-                    }
-                  }).catch((response) => {
-                    console.log("Connection Error Encountered on Fetching Data");
-                    console.log(response);
-                  });
+                        console.log(response.msg);
+                        this.setState({
+                            name:response.userinfo.name,
+                            position:response.userinfo.position,
+                            data:response.msg
+                        });
+                    }).catch(function(response) {
+                        //handle error
+                        console.log(response);
+                    });
               }else{ 
                   this.setState({isLoggedIn:false});
               }
@@ -373,35 +382,32 @@ class EnhancedTable extends React.Component {
     (this.state.data.length<event.target.value) ? this.setState({rowsPerPage:this.state.data.length}) : this.setState({rowsPerPage:event.target.value});
   };
 
-  handleShowLog = (id, e) => { //Showing Normal Log
-    this.props.viewLog(id);
-  }
-
   isSelected = id => this.state.selected.indexOf(id) !== -1;
 
   render() {
     if (!this.state.isLoggedIn) {
       return <Redirect to={"/"} />;
-  };
+    }
     
     const { classes } = this.props;
     const { data, order, orderBy, selected, rowsPerPage, page } = this.state;
     const emptyRows = rowsPerPage - Math.min(rowsPerPage, data.length - page * rowsPerPage);
-
+    console.log("THIS IS THE STATE LOADED: ", this.state);
     return (
       <Paper className={classes.root}>
-        <EnhancedTableToolbar numSelected={selected.length} />
+        <TimekeepingTable1Toolbar 
+        numSelected={selected.length} 
+        name={this.state.name} 
+        position={this.state.position ? "("+this.state.position+")" : ""} />
         <div className={classes.tableWrapper}>
           <Table className={classes.table} aria-labelledby="tableTitle">
-            <EnhancedTableHead
+            <TimekeepingTable1Head
               numSelected={selected.length}
               order={order}
               orderBy={orderBy}
               onSelectAllClick={this.handleSelectAllClick}
               onRequestSort={this.handleRequestSort}
               rowCount={data.length}
-              name={this.state.name}
-              position={this.state.position}
             />
             <TableBody>
               {data
@@ -417,19 +423,17 @@ class EnhancedTable extends React.Component {
                       key={n.id}
                       selected={isSelected}
                     >
-                      <TableCell key={n.id} padding="checkbox" numeric>
-                         <Checkbox checked={isSelected} onClick={event => this.handleClick(event, n.id)}/> 
+                      <TableCell padding="checkbox" onClick={event => this.handleClick(event, n.id)}>
+                         <Checkbox checked={isSelected} /> 
                       </TableCell>
                       <TableCell component="th" scope="row" padding="none">
-                        {n.last_name}
+                        {n.seq}
                       </TableCell>
-                      <TableCell>{n.first_name}</TableCell>
-                      <TableCell>{n.pos_title}</TableCell>
-                      <TableCell>{n.max} {(n.description!==null) ? "("+n.description+")" : " - "}</TableCell>
+                      <TableCell>{n.datetime}</TableCell>
+                      <TableCell>{n.description}</TableCell>
+                      <TableCell>{n.for_change}</TableCell>
                       <TableCell>
-                      <Link to="/admin/timekeeping/employee" style={{ textDecoration: 'none' }}>
-                          <Button id={n.id} onClick={(e) => this.handleShowLog(n.id, e)} variant="contained" color="secondary" className={classes.button}>Show Time Log</Button>
-                      </Link>
+
                       </TableCell>
                     </TableRow>
                   );
@@ -461,8 +465,8 @@ class EnhancedTable extends React.Component {
   }
 }
 
-EnhancedTable.propTypes = {
+TimekeepingTable1.propTypes = {
   classes: PropTypes.object.isRequired,
 };
 
-export default withStyles(styles)(EnhancedTable);
+export default withStyles(styles)(TimekeepingTable1);

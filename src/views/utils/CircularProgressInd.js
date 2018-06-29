@@ -11,8 +11,8 @@ const styles = theme => ({
   center: { 
     position: "relative",
     width: "100%",
-    left: "44%",
-    top: "200px",
+    left: "75px",
+    top: "25px",
     right:"0px",
     outline: "none"
   }
